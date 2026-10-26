@@ -4,7 +4,7 @@
 
 ## Как запустить
 
-1. Скачайте `MC-Words-Overlay-Portable-x64.zip` из [Releases](https://github.com/Timon2306/mc-words-overlay/releases).
+1. Скачайте `MC-Words-Overlay-Portable-x64.zip` из [Releases](https://github.com/Timon2306/words-cristalix/releases).
 2. Распакуйте в любую папку.
 3. Запустите `mc-words-overlay.exe`.
 

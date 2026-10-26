@@ -58,7 +58,7 @@ jobs:
           3. Установка не нужна.
 
           Настройки и API-ключи хранятся в профиле Windows.
-          Подробнее: https://github.com/Timon2306/mc-words-overlay
+          Подробнее: https://github.com/Timon2306/words-cristalix
           "@ | Set-Content "portable/README.txt" -Encoding utf8
 
           Compress-Archive -Path "portable/*" -DestinationPath "MC-Words-Overlay-Portable-x64.zip" -Force
