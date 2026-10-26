@@ -1,0 +1,49 @@
+[package]
+name = "mc-words-overlay"
+version = "0.1.0"
+description = "Ultra-fast desktop overlay assistant for Minecraft Words mini-game"
+authors = ["Timon2306"]
+edition = "2021"
+rust-version = "1.80"
+
+[lib]
+name = "mc_words_overlay_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.0", features = [] }
+
+[dependencies]
+tauri = { version = "2.2", features = [] }
+tauri-plugin-global-shortcut = "2.2"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "rustls-tls-native-roots", "rustls-tls-webpki-roots", "json", "socks"] }
+
+# Захват экрана и кодирование в PNG/Base64 в оперативной памяти
+xcap = "0.0.14"
+image = { version = "0.25", default-features = false, features = ["png"] }
+base64 = "0.22"
+
+# Буфер обмена и быстрая нативная эмуляция клавиатуры Windows (SendInput)
+arboard = "3.4"
+enigo = "0.3"
+
+# Синхронизация и работа с системным DPI в Windows
+parking_lot = "0.12"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = [
+    "Win32_UI_HiDpi",
+    "Win32_Foundation",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_System_Threading",
+] }
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = 3
+strip = true

@@ -1,0 +1,90 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    name: Windows build
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run tauri:build
+
+      - name: Prepare portable zip
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path portable | Out-Null
+          Copy-Item "src-tauri/target/release/mc-words-overlay.exe" "portable/mc-words-overlay.exe"
+          Copy-Item "LICENSE" "portable/LICENSE.txt"
+
+          @"
+          MC Words Overlay
+
+          1. Распакуйте архив в любую папку.
+          2. Запустите mc-words-overlay.exe.
+          3. Установка не нужна.
+
+          Настройки и API-ключи хранятся в профиле Windows.
+          Подробнее: https://github.com/Timon2306/mc-words-overlay
+          "@ | Set-Content "portable/README.txt" -Encoding utf8
+
+          Compress-Archive -Path "portable/*" -DestinationPath "MC-Words-Overlay-Portable-x64.zip" -Force
+
+      - name: Upload portable
+        uses: actions/upload-artifact@v4
+        with:
+          name: MC-Words-Overlay-Portable-x64
+          path: MC-Words-Overlay-Portable-x64.zip
+          retention-days: 14
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: MC-Words-Overlay-Setup-x64
+          path: src-tauri/target/release/bundle/nsis/*.exe
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            MC-Words-Overlay-Portable-x64.zip
+            src-tauri/target/release/bundle/nsis/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
